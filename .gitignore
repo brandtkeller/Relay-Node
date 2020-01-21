@@ -1,0 +1,19 @@
+.vscode/
+.settings/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.cmd
+*.classpath
+*.settings
+*.project
+*.mvn
+mvnw
+target
+node_modules
+*.DS_Store
