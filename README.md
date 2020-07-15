@@ -1,6 +1,19 @@
-# Java Sample Project 
+# Relay Node
 
-RESTful java server built with maven with ability to be containterized. 
+Node with API exposed for controlling relays.
+
+## Workflow
+* Node will enroll with the hub upon startup as a relay type module
+* Frontend will query the backend for module address
+* Frontend will send GET /relays
+* Node will return list of relays that belong to that model
+
+## Configurable for 1->n relays
+* Use config.properties file to list relay title and pin #
+* https://crunchify.com/java-properties-file-how-to-read-config-properties-values-in-java/
+* https://stackoverflow.com/questions/1318347/how-to-use-java-property-files
+* https://stackoverflow.com/questions/28326842/java-iterate-through-properties-file
+
 
 ## Getting Started
 
@@ -35,7 +48,7 @@ mvn package
 Run
 
 ```
-java -jar ./target/springbootdemo-0.0.1.jar
+java -jar ./target/relay-node-0.0.1.jar
 ```
 
 The server will now be running on port 8080 with an included mock dataset.
@@ -47,35 +60,6 @@ Testing the server via command line
 
 ### REST test examples
 
-GET all employees in the dataset
-
-```
-curl -v -X GET http://localhost:8080/employees/
-```
-
-GET a single employee from the dataset
-
-```
-curl -v -X GET http://localhost:8080/employees/2
-```
-
-POST (add) a new employee to the dataset
-
-```
-curl -v -d '{"firstName":"John", "lastName":"Doe", "email":"johndoe@test.com"}' -H "Content-Type: application/json" -X POST http://localhost:8080/employees/
-```
-
-PUT (Modify) an employee in the dataset)
-
-```
-curl -v -d '{"firstName":"Jane", "lastName":"Doe", "email":"janedoe@test.com""}' -H "Content-Type: application/json" -X POST http://localhost:8080/employees/2
-```
-
-DELETE (remove) an employee from the dataset
-
-```
-curl -v -X DELETE http://localhost:8080/employees/2
-```
 
 ## Deployment
 
