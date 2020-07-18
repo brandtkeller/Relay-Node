@@ -2,11 +2,15 @@
 
 Node with API exposed for controlling relays.
 
+## TODO
+* Figure out where to put properties file to utilize with RelayDAO.init()
+* Expose a /health GET option for healthchecks with logical checks
+
 ## Workflow
 * Node will enroll with the hub upon startup as a relay type module
 * Frontend will query the backend for module address
 * Frontend will send GET /relays
-* Node will return list of relays that belong to that model
+* Node will return a relayModule object that contains a list of relays
 
 ## Configurable for 1->n relays
 * Use config.properties file to list relay title and pin #

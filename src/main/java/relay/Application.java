@@ -11,14 +11,14 @@ public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
         
-        for (int i = 0; i < 60; i++) {
-            System.out.println("Here is some other logic that I need to run");
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            }
-            catch (InterruptedException e) {
-                
-            }
+        try {
+            TimeUnit.SECONDS.sleep(5);
         }
+        catch (InterruptedException e) {
+            
+        }
+
+        RelayDAO relay = new RelayDAO();
+        relay.init();
     }
 }

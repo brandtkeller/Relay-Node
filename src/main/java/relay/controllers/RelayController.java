@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import relay.models.Relay;
+
 @RestController
 @RequestMapping(path ="/relay")
 public class RelayController {
@@ -28,7 +30,7 @@ public class RelayController {
     }  
 
     @PutMapping(path="/{id}", produces = "application/json")
-    public ResponseEntity<Object> putEmployee(@PathVariable("id") String id, @RequestBody Employee employee) { 
+    public ResponseEntity<Object> putEmployee(@PathVariable("id") String id, @RequestBody Relay relay) { 
 
         return new ResponseEntity<>("Employee was not found", HttpStatus.NOT_FOUND);
     }
