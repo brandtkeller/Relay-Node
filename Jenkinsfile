@@ -18,7 +18,7 @@ pipeline {
           steps {
             sh 'rm -rf *'
             sh 'git clone $HOME_REPO'
-            sh 'cd $HOME_REPO && mvn test'
+            sh 'cd $PROJECT && mvn test'
           }
       }
       // On push to master, build prod image and scan
@@ -30,7 +30,7 @@ pipeline {
           steps {
              sh 'rm -rf *'
              sh 'git clone $HOME_REPO'
-             sh 'cd $HOME_REPO && mvn test'
+             sh 'cd $PROJECT && mvn test'
           }
       }
 
