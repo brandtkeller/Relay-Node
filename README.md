@@ -52,7 +52,7 @@ mvn package
 Run
 
 ```
-java -jar ./target/relay-node-0.0.1.jar
+java -jar -Drelays=Compressor,Purge-Valve -Dpins=00,02 ./target/relay-node-0.0.1.jar
 ```
 
 The server will now be running on port 8080 with an included mock dataset.

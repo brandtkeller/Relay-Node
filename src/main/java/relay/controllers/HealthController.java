@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path ="/relay")
+@RequestMapping(path ="/health")
 public class HealthController {
     @GetMapping(path="/", produces = "application/json")
     public ResponseEntity <Object> getRelays() {
