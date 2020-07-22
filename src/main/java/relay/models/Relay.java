@@ -3,14 +3,19 @@ package relay.models;
 public class Relay {
     private int id;
     private String title;
-    private int pin;
+    private String pin;
     private boolean state;
 
-    public Relay(int id, String title, int pin) {
+    public Relay(int id, String title, String pin) {
         this.id =  id;
         this.title = title;
         this.pin = pin;
         this.state = false;
+    }
+
+    @Override
+    public String toString() { 
+        return String.format("{'type':'relay','id':'" + id + "','attributes':{'title':'" + title + "','pin':'" + pin + "','state':'" + state +"'}},"); 
     }
 
     public int getId() {
@@ -29,11 +34,11 @@ public class Relay {
         this.title = title;
     }
 
-    public int getPin() {
+    public String getPin() {
         return this.pin;
     }
 
-    public void setPin( int pin ) {
+    public void setPin( String pin ) {
         this.pin = pin;
     }
 

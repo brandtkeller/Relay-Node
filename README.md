@@ -3,20 +3,21 @@
 Node with API exposed for controlling relays.
 
 ## TODO
-* Figure out where to put properties file to utilize with RelayDAO.init()
 * Expose a /health GET option for healthchecks with logical checks
+* Configure the PUT /Relays/{id} endpoint
 
 ## Workflow
 * Node will enroll with the hub upon startup as a relay type module
 * Frontend will query the backend for module address
-* Frontend will send GET /relays
-* Node will return a relayModule object that contains a list of relays
+* Frontend will send GET /relayModule to the hub
+* The hub will query GET /relays/ and return the data to the frontend
+* The frontend will create relay objects and assign to relaymodule objects with a dynamic ID (relaymodule ID + relay id)
 
-## Configurable for 1->n relays
-* Use config.properties file to list relay title and pin #
-* https://crunchify.com/java-properties-file-how-to-read-config-properties-values-in-java/
-* https://stackoverflow.com/questions/1318347/how-to-use-java-property-files
-* https://stackoverflow.com/questions/28326842/java-iterate-through-properties-file
+To activate a relay
+* The Frontend will execute some action and send a PATCH/PUT to the hub backend
+* The hub backend will proxy that request to PUT /relays/ with the changed payload
+* The relay module will process the relay states and activate/deactivate accordingly (based on new state attribute)
+* Note: We could also utilize the PUT /relays/{id} by removing the module ID from the relay ID during proxy
 
 
 ## Getting Started

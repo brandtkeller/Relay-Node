@@ -11,16 +11,16 @@ class RelayTest {
 
     @Test
     void relayObjectTest() {
-        Relay relay = new Relay(1, "test", 22);
+        Relay relay = new Relay(1, "test", "22");
         
         assertEquals(1, relay.getId(), "The output should be the supplied id at object creation");
         assertTrue("test".equals(relay.getTitle()),"The output should be the supplied title at object creation");
-        assertEquals(22, relay.getPin(), "The output should be the supplied Pin at object creation");
+        assertEquals("22", relay.getPin(), "The output should be the supplied Pin at object creation");
     }
 
     @Test
     void relayTitleTest() {
-        Relay relay = new Relay(1, "test", 22);
+        Relay relay = new Relay(1, "test", "22");
         assertEquals("test", relay.getTitle());
         relay.setTitle("application");
         assertEquals("application", relay.getTitle());
@@ -28,15 +28,15 @@ class RelayTest {
 
     @Test
     void relayPinTest() {
-        Relay relay = new Relay(1, "test", 22);
-        assertEquals(22, relay.getPin());
-        relay.setPin(23);
-        assertEquals(23, relay.getPin());
+        Relay relay = new Relay(1, "test", "22");
+        assertEquals("22", relay.getPin());
+        relay.setPin("23");
+        assertEquals("23", relay.getPin());
     }
 
     @Test
     void relayStateTest() {
-        Relay relay = new Relay(1, "test", 22);
+        Relay relay = new Relay(1, "test", "22");
         assertEquals(false, relay.getState());
         relay.setState(true);
         assertEquals(true, relay.getState());

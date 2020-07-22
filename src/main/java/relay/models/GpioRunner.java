@@ -18,7 +18,10 @@ public class GpioRunner {
     public GpioRunner(String[] names, String[] pins) {
         // Get two arrays of Relay Names and Pins and assign to pin/state Hashtables
         for (int i = 0; i < names.length; i++) {
-            pin_dict.put(names[i], RaspiPin.getPinByName("GPIO " + pins));
+            if (!Boolean.parseBoolean(System.getProperty("testing"))) {
+                System.out.println("We are not in the testing mode.");
+                pin_dict.put(names[i], RaspiPin.getPinByName("GPIO " + pins[i]));
+            }
             state_dict.put(names[i], false);
         }
     }

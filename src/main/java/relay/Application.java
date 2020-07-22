@@ -18,7 +18,6 @@ public class Application {
             
         }
 
-        RelayDAO relay = new RelayDAO();
-        relay.init();
+        RelayDAO.init();
     }
 }
