@@ -18,7 +18,7 @@ import relay.models.Relay;
 @RequestMapping(path ="/relays")
 public class RelayController {
 
-    @GetMapping(path="/", produces = "application/json")
+    @GetMapping(path="", produces = "application/json")
     public ResponseEntity <Object> getRelays() {
 
         return new ResponseEntity<Object>(RelayDAO.getAllrelays(), HttpStatus.OK);
@@ -26,8 +26,11 @@ public class RelayController {
     
     @GetMapping(path="/{id}", produces = "application/json")
     public ResponseEntity<Object> getEmployee(@PathVariable("id") String id) { 
-        
-        return new ResponseEntity<>("Relay was not found", HttpStatus.NOT_FOUND);
+        if (RelayDAO.checkRelayId(Integer.parseInt(id))) {
+            return new ResponseEntity<Object>(RelayDAO.getRelay(Integer.parseInt(id)), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Relay was not found", HttpStatus.NOT_FOUND);
+        }
     }  
 
     @PutMapping(path="/{id}", produces = "application/json")

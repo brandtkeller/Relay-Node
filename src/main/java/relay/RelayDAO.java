@@ -1,7 +1,7 @@
 package relay;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Hashtable;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 import org.apache.commons.lang3.StringUtils;
@@ -12,10 +12,10 @@ import relay.models.Relay;
 @Repository
 public class RelayDAO {
     private static GpioRunner gInstance = null;
-    private static List<Relay> relayInstances = null;
+    private static Hashtable<Integer, Relay> relayInstances = null;
     
     public static boolean init() {
-        relayInstances = new ArrayList<>();
+        relayInstances = new Hashtable<Integer, Relay>();
         String relays = System.getProperty("relays");
         String pins = System.getProperty("pins");
         System.out.println(relays);
@@ -28,7 +28,7 @@ public class RelayDAO {
 
             // initialize the relay objects
             for (int i = 0; i < names.length; i++) {
-                relayInstances.add(new Relay(i, names[i], relayPins[i]));
+                relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i]));
             }
 
         } catch (Exception e) {
@@ -40,14 +40,32 @@ public class RelayDAO {
     }
 
     public static String getAllrelays() {
-        System.out.println(relayInstances.size() + " is the current size of the relay list");
         String response = "{'data':[";
-        for (Relay temp : relayInstances) {
+        for (int i = 0; i < relayInstances.size(); i++) {
+            Relay temp = relayInstances.get(i + 1);
             response += temp.toString();
         }
         response = StringUtils.chop(response);
         // End of payload
         response += "]}";
         return response;
+    }
+
+    public static String getRelay( int id) {
+        String response = "{'data':[";
+        Relay temp = relayInstances.get(id);
+        response += temp.toString();
+        response = StringUtils.chop(response);
+        // End of payload
+        response += "]}";
+        return response;
+    }
+
+    public static boolean checkRelayId( int id) {
+        Relay temp = relayInstances.get(id);
+        if (temp != null) {
+            return true;
+        }
+        return false;
     }
 }
