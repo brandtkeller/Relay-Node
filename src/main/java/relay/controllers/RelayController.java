@@ -35,8 +35,12 @@ public class RelayController {
 
     @PutMapping(path="/{id}", produces = "application/json")
     public ResponseEntity<Object> putEmployee(@PathVariable("id") String id, @RequestBody Relay relay) { 
-
-        return new ResponseEntity<>("Relay was not found", HttpStatus.NOT_FOUND);
+        System.out.println(relay.toString());
+        if (RelayDAO.checkRelayId(Integer.parseInt(id))) {
+            return new ResponseEntity<Object>(RelayDAO.modifyRelay(relay), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Relay was not found", HttpStatus.NOT_FOUND);
+        }
     }
 
 }

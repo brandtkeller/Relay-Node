@@ -45,8 +45,9 @@ public class RelayDAO {
             Relay temp = relayInstances.get(i + 1);
             response += temp.toString();
         }
-        response = StringUtils.chop(response);
-        // End of payload
+        if (relayInstances.size() > 0) {
+            response = StringUtils.chop(response);
+        }
         response += "]}";
         return response;
     }
@@ -56,7 +57,6 @@ public class RelayDAO {
         Relay temp = relayInstances.get(id);
         response += temp.toString();
         response = StringUtils.chop(response);
-        // End of payload
         response += "]}";
         return response;
     }
@@ -67,5 +67,31 @@ public class RelayDAO {
             return true;
         }
         return false;
+    }
+
+    public static String modifyRelay(Relay reqRelay) {
+        // Identify the relay to be modified
+        int reqId = reqRelay.getId();
+        boolean reqState = reqRelay.getState();
+        // State (boolean) is the only attribute that should be modified currently
+        Relay exRelay = relayInstances.get(reqId);
+        if ( exRelay.getState() != reqState) {
+            if (reqState == true) {
+                gInstance.activateRelay(exRelay.getTitle());
+                exRelay.setState(true);
+            } else {
+                gInstance.deactivateRelay(exRelay.getTitle());
+                exRelay.setState(false);
+            }
+        }
+        return getRelay(reqId);
+    }
+
+    public static boolean healthCheck() {
+        if (relayInstances != null && relayInstances.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

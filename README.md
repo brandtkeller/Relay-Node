@@ -4,7 +4,6 @@ Node with API exposed for controlling relays.
 
 ## TODO
 * Expose a /health GET option for healthchecks with logical checks
-* Configure the PUT /relays/{id} endpoint
 
 ## Workflow
 * Node will enroll with the hub upon startup as a relay type module
@@ -53,7 +52,7 @@ mvn package
 Run
 
 ```
-java -jar -Drelays=Compressor,Purge-Valve -Dpins=00,02 -Dtesting=true ./target/relay-node-0.0.1.jar
+java -jar -Drelays=Compressor,Purge-Valve -Dpins=0,2 -Dtesting=true ./target/relay-node-0.0.1.jar
 ```
 
 The server will now be running on port 8080 with an included mock dataset.
@@ -64,6 +63,9 @@ See below for running command line manual testing.
 Testing the server via command line
 
 ### REST test examples
+
+* PUT /relays/{id}
+    * curl -X PUT localhost:8083/relays/1 -H 'Content-type:application/json' -d '{"id": "1", "title": "Compressor", "state": "true"}'
 
 
 ## Deployment

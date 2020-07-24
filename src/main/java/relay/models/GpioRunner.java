@@ -16,10 +16,8 @@ public class GpioRunner {
     private Hashtable<String, Boolean> state_dict = new Hashtable<String, Boolean>();
 
     public GpioRunner(String[] names, String[] pins) {
-        // Get two arrays of Relay Names and Pins and assign to pin/state Hashtables
         for (int i = 0; i < names.length; i++) {
             if (!Boolean.parseBoolean(System.getProperty("testing"))) {
-                System.out.println("We are not in the testing mode.");
                 pin_dict.put(names[i], RaspiPin.getPinByName("GPIO " + pins[i]));
             }
             state_dict.put(names[i], false);
@@ -27,32 +25,42 @@ public class GpioRunner {
     }
 
     public void activateRelay(String relayName) {
-        GpioUtil.enableNonPrivilegedAccess();
-        final GpioController gpioRelay = GpioFactory.getInstance();
-        GpioPinDigitalOutput relay = null;
-        // Check if dictionary item for pin is null
-        relay = output_dict.get(relayName);
-        // If null, assign
-        if (relay == null) {
-            output_dict.put(relayName, gpioRelay.provisionDigitalOutputPin(pin_dict.get(relayName),"RelayLED",PinState.HIGH)); // OFF
+        if (!Boolean.parseBoolean(System.getProperty("testing"))) {
+            GpioUtil.enableNonPrivilegedAccess();
+            final GpioController gpioRelay = GpioFactory.getInstance();
+            GpioPinDigitalOutput relay = null;
+            // Check if dictionary item for pin is null
             relay = output_dict.get(relayName);
+            // If null, assign
+            if (relay == null) {
+                output_dict.put(relayName, gpioRelay.provisionDigitalOutputPin(pin_dict.get(relayName),"RelayLED",PinState.HIGH)); // OFF
+                relay = output_dict.get(relayName);
+            }
+            relay.low(); // ON
+            state_dict.put(relayName, true);
+        } else {
+            System.out.println("Testing Mode - Turning relay on");
         }
-        relay.low(); // ON
-        state_dict.put(relayName, true);
+        
     }
 
     public void deactivateRelay(String relayName) {
-        GpioUtil.enableNonPrivilegedAccess();
-        final GpioController gpioRelay = GpioFactory.getInstance();
-        GpioPinDigitalOutput relay = null;
-        // Check if dictionary item for pin is null
-        relay = output_dict.get(relayName);
-        // If null, assign
-        if (relay == null) {
-            output_dict.put(relayName, gpioRelay.provisionDigitalOutputPin(pin_dict.get(relayName),"RelayLED",PinState.HIGH)); // OFF
+        if (!Boolean.parseBoolean(System.getProperty("testing"))) {
+            GpioUtil.enableNonPrivilegedAccess();
+            final GpioController gpioRelay = GpioFactory.getInstance();
+            GpioPinDigitalOutput relay = null;
+            // Check if dictionary item for pin is null
             relay = output_dict.get(relayName);
+            // If null, assign
+            if (relay == null) {
+                output_dict.put(relayName, gpioRelay.provisionDigitalOutputPin(pin_dict.get(relayName),"RelayLED",PinState.HIGH)); // OFF
+                relay = output_dict.get(relayName);
+            }
+            relay.high(); // OFF
+            state_dict.put(relayName, false);
+        } else {
+            System.out.println("Testing Mode - Turning relay off");
         }
-        relay.high(); // OFF
-        state_dict.put(relayName, false);
+        
     }
 }
