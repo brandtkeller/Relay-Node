@@ -1,6 +1,5 @@
 package relay.controllers;
 
-import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

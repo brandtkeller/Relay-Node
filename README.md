@@ -4,6 +4,26 @@ Node with API exposed for controlling relays.
 
 ## TODO
 * Expose a /health GET option for healthchecks with logical checks
+* Modify relay class for timer functionality (See below)
+
+## Timer Functionality (To Add)
+How do we utilize the base relay node to handle a schedule
+What we currently have:
+* Relay functionality with manual control (on/off) of state (true/false)
+* API exposed for controlling state
+
+What we need:
+* A loop in the main function that executes a schedule check (utilize the relayDAO)
+    * Is current time >= a trigger time
+    * Check current state against on/off times
+* A variable that identifies a relay as either a static (manual) or Timer (automatic)
+    * RelayDAO would check for this first before attempting some schedule logic
+* A schedule variable to can be expanded upon (String with delimiters)
+    * How to convert String to time object?
+* A way to store the schedule
+    * If the timer property is true, grab last schedule from directory
+    * Add file operations to the RelayDAO.init() function
+
 
 ## Workflow
 * Node will enroll with the hub upon startup as a relay type module

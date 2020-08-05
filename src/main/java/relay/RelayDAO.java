@@ -3,6 +3,10 @@ package relay;
 import java.util.Hashtable;
 import java.util.Set;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 import org.springframework.stereotype.Repository;
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,8 +22,16 @@ public class RelayDAO {
         relayInstances = new Hashtable<Integer, Relay>();
         String relays = System.getProperty("relays");
         String pins = System.getProperty("pins");
+        String type = System.getProperty("type");
         System.out.println(relays);
         System.out.println(pins);
+
+        try {
+            // Read schedule from a file here, if not present then set a default
+            // https://www.w3schools.com/java/java_files_read.asp
+        } catch (Exception e) {
+            
+        }
 
         try {
             String[] names = relays.split(",");
