@@ -24,7 +24,7 @@ public class RelayController {
     }
     
     @GetMapping(path="/{id}", produces = "application/json")
-    public ResponseEntity<Object> getEmployee(@PathVariable("id") String id) { 
+    public ResponseEntity<Object> getRelay(@PathVariable("id") String id) { 
         if (RelayDAO.checkRelayId(Integer.parseInt(id))) {
             return new ResponseEntity<Object>(RelayDAO.getRelay(Integer.parseInt(id)), HttpStatus.OK);
         } else {
@@ -33,7 +33,7 @@ public class RelayController {
     }  
 
     @PutMapping(path="/{id}", produces = "application/json")
-    public ResponseEntity<Object> putEmployee(@PathVariable("id") String id, @RequestBody Relay relay) { 
+    public ResponseEntity<Object> putRelay(@PathVariable("id") String id, @RequestBody Relay relay) { 
         System.out.println(relay.toString());
         if (RelayDAO.checkRelayId(Integer.parseInt(id))) {
             return new ResponseEntity<Object>(RelayDAO.modifyRelay(relay), HttpStatus.OK);

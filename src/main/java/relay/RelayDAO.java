@@ -86,13 +86,7 @@ public class RelayDAO {
         boolean reqState = reqRelay.getState();
         // State (boolean) is the only attribute that should be modified currently
         Relay exRelay = relayInstances.get(reqId);
-        if ( exRelay.getState() != reqState) {
-            if (reqState == true) {
-                exRelay.setState(true);
-            } else {
-                exRelay.setState(false);
-            }
-        }
+        exRelay.executeState(reqState);
         return getRelay(reqId);
     }
 

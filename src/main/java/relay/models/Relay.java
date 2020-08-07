@@ -32,6 +32,23 @@ public class Relay {
     private Pin rpiPin;
     private GpioPinDigitalOutput provRpiPin;
 
+    public Relay() {
+
+    }
+
+    public Relay(int id, String title, String pin) {
+        this.id =  id;
+        this.title = title;
+        this.pin = pin;
+        this.state = false;
+        this.type = "static";
+        this.schedule = null;
+        if (!Boolean.parseBoolean(System.getProperty("testing"))) {
+            this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
+        }
+        
+    }
+
     public Relay(int id, String title, String pin, String type) {
         this.id =  id;
         this.title = title;
@@ -104,13 +121,16 @@ public class Relay {
     }
 
     public void setState( boolean newState ) {
+        this.state = newState;
+    }
+
+    public void executeState(boolean newState) {
         if (!java.util.Objects.equals(this.state, newState)) {
             this.state = newState;
             setGpioState(newState);
         } else {
             System.out.println("Attempted to change state to it's already existing state. IE " + this.state + " == " + newState);
         }
-        
     }
 
     public String getType() {
@@ -183,19 +203,20 @@ public class Relay {
             String[] timeSplit = this.onTimes.get(i+1).split(":");
             ZonedDateTime onCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(timeSplit[0]) , Integer.parseInt(timeSplit[1]) ));
             if (currentTime.isAfter(onCompareTime)) {
-                String[] offTimeSplit = this.onTimes.get(i+1).split(":");
+                String[] offTimeSplit = this.offTimes.get(i+1).split(":");
                 ZonedDateTime offCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(offTimeSplit[0]) , Integer.parseInt(offTimeSplit[1]) ));
 
                 if (currentTime.isBefore(offCompareTime)) {
-                    setState(true);
+                    executeState(true);
                     this.nextTriggerTime = offCompareTime;
                     System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
+                    return;
                 } else {
                     continue;
                 }
 
             } else {
-                setState(false);
+                executeState(false);
                 this.nextTriggerTime = onCompareTime;
                 System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
             }

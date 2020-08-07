@@ -111,7 +111,7 @@ Testing the server via command line
 ### REST test examples
 
 * PUT /relays/{id}
-    * curl -X PUT localhost:8083/relays/1 -H 'Content-type:application/json' -d '{"id": "1", "title": "Compressor", "state": "true"}'
+    * curl -X PUT localhost:8083/relays/1 -H 'Content-type:application/json' -d '{"id": "1", "state": "true"}'
 
 
 ## Deployment
