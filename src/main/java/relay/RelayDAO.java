@@ -1,40 +1,31 @@
 package relay;
 
 import java.util.Hashtable;
-import java.util.Set;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 import org.apache.commons.lang3.StringUtils;
 
-import relay.models.GpioRunner;
 import relay.models.Relay;
 
 @Repository
 public class RelayDAO {
-    private static GpioRunner gInstance = null;
     private static Hashtable<Integer, Relay> relayInstances = null;
     
     public static boolean init() {
         relayInstances = new Hashtable<Integer, Relay>();
         String relays = System.getProperty("relays");
         String pins = System.getProperty("pins");
-        String type = System.getProperty("types");//Boolean.parseBoolean(System.getProperty("timer"));
-        System.out.println(relays);
-        System.out.println(pins);
-        
+        String type = System.getProperty("types");
 
         try {
             String[] names = relays.split(",");
             String[] relayPins = pins.split(",");
             String[] types = type.split(",");
-
-            gInstance = new GpioRunner(names, relayPins);
 
             // initialize the relay objects
             for (int i = 0; i < names.length; i++) {
@@ -45,14 +36,14 @@ public class RelayDAO {
                     relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i], types[i], readScheduleFromFile(names[i])));
                 } else {
                     System.out.println(names[i] + " is NOT a timer relay");
-                    relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i]));
+                    relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i], types[i]));
                 }
                 
             }
 
         } catch (Exception e) {
             System.out.println(e);
-            System.out.println("Unable to parse the necessary parameters (relays & pins)");
+            System.out.println("Unable to parse the necessary parameters (relays, pins & types)");
             System.exit(1);
         }
         return true;
@@ -88,6 +79,7 @@ public class RelayDAO {
         return false;
     }
 
+    // Add changes for modifying schedule and writing to file
     public static String modifyRelay(Relay reqRelay) {
         // Identify the relay to be modified
         int reqId = reqRelay.getId();
@@ -96,10 +88,8 @@ public class RelayDAO {
         Relay exRelay = relayInstances.get(reqId);
         if ( exRelay.getState() != reqState) {
             if (reqState == true) {
-                gInstance.activateRelay(exRelay.getTitle());
                 exRelay.setState(true);
             } else {
-                gInstance.deactivateRelay(exRelay.getTitle());
                 exRelay.setState(false);
             }
         }
@@ -111,6 +101,13 @@ public class RelayDAO {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public static void relayScheduleCheck() {
+        Set<Integer> keys = relayInstances.keySet();
+        for(Integer key: keys){
+            relayInstances.get(key).checkSchedule();
         }
     }
 
@@ -128,7 +125,8 @@ public class RelayDAO {
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred while opening the " + name + ".txt file.");
             System.out.println("Assigning a generic schedule");
-            return "06:00:00/08:00:00";
+            return "06:00:00/08:00:00,11:00:00/14:00:00";
         }
     }
+
 }

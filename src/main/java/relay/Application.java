@@ -19,5 +19,25 @@ public class Application {
         }
 
         RelayDAO.init();
+
+        // Handle keyboard interrupt gracefully
+        Runtime.getRuntime().addShutdownHook(new Thread() 
+        {
+            @Override
+            public void run() 
+            {
+                System.out.println("Shutting down gracefully");
+                // Enter other shutdown logic here
+            }
+        });
+        while(true) {
+            RelayDAO.relayScheduleCheck();
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            }
+            catch (InterruptedException e) {
+                
+            }
+        }
     }
 }

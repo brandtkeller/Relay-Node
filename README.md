@@ -3,14 +3,9 @@
 Node with API exposed for controlling relays.
 
 ## TODO
-* Migrate GPIORunner logic into individual object classes
-    * Write logic for the setGpioState() function
+
 * Modify relay class for timer functionality (See below)
-    * Change timerFlags property back to string
-        * Compare string to find object type
-    * Schedule storage and processing on the relay object
     * Changing storage would write data to file
-    * Presumably already converted to zonedatetime (See Thermostat-Master)
 * Modify timer class for sunrise/sunset capability
     * https://stackoverflow.com/questions/4935960/calculating-sunrise-and-sunset-with-java
 * Add toggle relay functionality
@@ -31,10 +26,10 @@ What we need:
 * A loop in the main function that executes a schedule check (utilize the relayDAO)
     * Is current time >= a trigger time
     * Check current state against on/off times
+        * 
 * A variable that identifies a relay as either a static (manual) or timer (automatic)
     * RelayDAO would check for this first before attempting some schedule logic
 * A schedule variable to can be expanded upon (String with delimiters)
-    * How to convert String to time object?
 * A way to store the schedule
     * If the timer property is true, grab last schedule from directory
     * Add file operations to the RelayDAO.init() function
@@ -103,7 +98,7 @@ mvn package
 Run
 
 ```
-java -jar -Drelays=Compressor,Purge-Valve -Dpins=0,2 -Dtesting=true -DtimerFlags=true,false ./target/relay-node-0.0.1.jar --server.port=8083
+java -jar -Drelays=Compressor,Purge-Valve -Dpins=0,2 -Dtesting=true -Dtypes=timer,static ./target/automation-node-0.0.1.jar --server.port=8083
 ```
 
 The server will now be running on port 8080 with an included mock dataset.
