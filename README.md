@@ -3,8 +3,23 @@
 Node with API exposed for controlling relays.
 
 ## TODO
-* Expose a /health GET option for healthchecks with logical checks
+* Migrate GPIORunner logic into individual object classes
+    * Write logic for the setGpioState() function
 * Modify relay class for timer functionality (See below)
+    * Change timerFlags property back to string
+        * Compare string to find object type
+    * Schedule storage and processing on the relay object
+    * Changing storage would write data to file
+    * Presumably already converted to zonedatetime (See Thermostat-Master)
+* Modify timer class for sunrise/sunset capability
+    * https://stackoverflow.com/questions/4935960/calculating-sunrise-and-sunset-with-java
+* Add toggle relay functionality
+    * Toggle-on time
+* Create sensor <-> relay relationship
+    * Many to Many
+    * Relationships property?
+* Add initial logic for door sensors
+* Expose a /health GET option for healthchecks with logical checks
 
 ## Timer Functionality (To Add)
 How do we utilize the base relay node to handle a schedule
@@ -16,13 +31,29 @@ What we need:
 * A loop in the main function that executes a schedule check (utilize the relayDAO)
     * Is current time >= a trigger time
     * Check current state against on/off times
-* A variable that identifies a relay as either a static (manual) or Timer (automatic)
+* A variable that identifies a relay as either a static (manual) or timer (automatic)
     * RelayDAO would check for this first before attempting some schedule logic
 * A schedule variable to can be expanded upon (String with delimiters)
     * How to convert String to time object?
 * A way to store the schedule
     * If the timer property is true, grab last schedule from directory
     * Add file operations to the RelayDAO.init() function
+    * What private storage does the relay object have for schedule checking?
+
+## Sensor Functionality
+* We do not execute actions against sensors, rather the sensors execute actions.
+* Would only need a GET / and GET /{id} API endpoints exposed
+* Listeners - https://pi4j.com/1.2/example/listener.html
+* Door Sensors
+    * Time-of-execution boolean state
+    * Would send a POST /Notification to the hub on trigger
+    * Would not need a listener
+* PIR Sensors
+    * Maintain a lastSeen state
+    * Would send a POST /Notification to the hub on trigger
+    * Could be tied to a target object -> turn on relay
+    * Would need a listener
+* DS18b20 Temp sensor
 
 
 ## Workflow
@@ -72,7 +103,7 @@ mvn package
 Run
 
 ```
-java -jar -Drelays=Compressor,Purge-Valve -Dpins=0,2 -Dtesting=true ./target/relay-node-0.0.1.jar
+java -jar -Drelays=Compressor,Purge-Valve -Dpins=0,2 -Dtesting=true -DtimerFlags=true,false ./target/relay-node-0.0.1.jar --server.port=8083
 ```
 
 The server will now be running on port 8080 with an included mock dataset.

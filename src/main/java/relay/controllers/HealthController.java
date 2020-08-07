@@ -14,7 +14,7 @@ public class HealthController {
     @GetMapping(path="", produces = "application/json")
     public ResponseEntity <Object> getRelays() {
         if (RelayDAO.healthCheck()) {
-            return new ResponseEntity<Object>("Service is Responsive and healthy", HttpStatus.OK);
+            return new ResponseEntity<Object>("Service is responsive and healthy", HttpStatus.OK);
         } else {
             return new ResponseEntity<Object>("Service is unhealthy", HttpStatus.INTERNAL_SERVER_ERROR);
         }
