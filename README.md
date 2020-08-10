@@ -3,11 +3,9 @@
 Node with API exposed for controlling relays.
 
 ## TODO
-
-* Modify relay class for timer functionality (See below)
-    * Changing storage would write data to file
 * Modify timer class for sunrise/sunset capability
     * https://stackoverflow.com/questions/4935960/calculating-sunrise-and-sunset-with-java
+    * if Schedule = sun, then use sunrise/sunset
 * Add toggle relay functionality
     * Toggle-on time
 * Create sensor <-> relay relationship

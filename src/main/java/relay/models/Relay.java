@@ -33,6 +33,10 @@ public class Relay {
     private GpioPinDigitalOutput provRpiPin;
 
     public Relay() {
+        // Initialize private variables for on-times and off-times
+        this.onTimes = new Hashtable<Integer, String>();
+        this.offTimes = new Hashtable<Integer, String>();
+        this.nextTriggerTime = null;
 
     }
 
@@ -68,19 +72,12 @@ public class Relay {
         this.pin = pin;
         this.state = false;
         this.type = type;
-        this.schedule = schedule;
         // Initialize private variables for on-times and off-times
         this.onTimes = new Hashtable<Integer, String>();
         this.offTimes = new Hashtable<Integer, String>();
         this.nextTriggerTime = null;
 
-        // populate on/off times
-        String[] scheduleSplit = schedule.split(",");
-        for (int i = 0; i < scheduleSplit.length; i++) {
-            String[] timeSplit = scheduleSplit[i].split("/");
-            this.onTimes.put(i+1, timeSplit[0]);
-            this.offTimes.put(i+1, timeSplit[1]);
-        }
+        setSchedule(schedule);
         
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
@@ -89,7 +86,8 @@ public class Relay {
 
     @Override
     public String toString() { 
-        return String.format("{'type':'relay','id':'" + id + "','attributes':{'title':'" + title + "','state':'" + state +"'}},"); 
+
+        return String.format("{'type':'relay','id':'" + id + "','attributes':{'title':'" + title + "','state':'" + state + "','schedule':'" + schedule + "'}},"); 
     }
 
     public int getId() {
@@ -147,6 +145,21 @@ public class Relay {
 
     public void setSchedule(String schedule) {
         this.schedule = schedule;
+
+        Hashtable<Integer, String> newOnTimes = new Hashtable<Integer, String>();
+        Hashtable<Integer, String> newOffTimes = new Hashtable<Integer, String>();
+        this.nextTriggerTime = null;
+
+        // populate on/off times
+        String[] scheduleSplit = schedule.split(",");
+        for (int i = 0; i < scheduleSplit.length; i++) {
+            String[] timeSplit = scheduleSplit[i].split("/");
+            newOnTimes.put(i+1, timeSplit[0]);
+            newOffTimes.put(i+1, timeSplit[1]);
+        }
+
+        this.onTimes = newOnTimes;
+        this.offTimes = newOffTimes;
     }
 
     public void checkSchedule() {
