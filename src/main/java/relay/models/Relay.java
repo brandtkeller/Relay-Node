@@ -1,11 +1,14 @@
 package relay.models;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
+import java.util.TimeZone;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -14,6 +17,8 @@ import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.wiringpi.GpioUtil;
+
+import org.shredzone.commons.suncalc.SunTimes;
 
 public class Relay {
     private int id;
@@ -24,6 +29,7 @@ public class Relay {
 
     // Scheduling Variables
     private String schedule;
+    private LocalDate today;
     private Hashtable<Integer, String> onTimes;
     private Hashtable<Integer, String> offTimes;
     private ZonedDateTime nextTriggerTime;
@@ -37,6 +43,7 @@ public class Relay {
         this.onTimes = new Hashtable<Integer, String>();
         this.offTimes = new Hashtable<Integer, String>();
         this.nextTriggerTime = null;
+        this.today = LocalDate.now();
 
     }
 
@@ -47,6 +54,7 @@ public class Relay {
         this.state = false;
         this.type = "static";
         this.schedule = null;
+        this.today = LocalDate.now();
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
         }
@@ -60,6 +68,7 @@ public class Relay {
         this.state = false;
         this.type = type;
         this.schedule = null;
+        this.today = LocalDate.now();
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
         }
@@ -72,7 +81,9 @@ public class Relay {
         this.pin = pin;
         this.state = false;
         this.type = type;
+
         // Initialize private variables for on-times and off-times
+        this.today = LocalDate.now();
         this.onTimes = new Hashtable<Integer, String>();
         this.offTimes = new Hashtable<Integer, String>();
         this.nextTriggerTime = null;
@@ -144,12 +155,13 @@ public class Relay {
     }
 
     public void setSchedule(String schedule) {
-        this.schedule = schedule;
 
         Hashtable<Integer, String> newOnTimes = new Hashtable<Integer, String>();
         Hashtable<Integer, String> newOffTimes = new Hashtable<Integer, String>();
         this.nextTriggerTime = null;
 
+        this.schedule = schedule;
+        
         // populate on/off times
         String[] scheduleSplit = schedule.split(",");
         for (int i = 0; i < scheduleSplit.length; i++) {
@@ -160,6 +172,8 @@ public class Relay {
 
         this.onTimes = newOnTimes;
         this.offTimes = newOffTimes;
+
+        getSunTimes();
     }
 
     public void checkSchedule() {
@@ -187,6 +201,38 @@ public class Relay {
         }
     }
 
+    // We need to identify when a on/off time is after midnight in order to add a day to the zonedatetime object
+    private void setScheduleLogic(ZonedDateTime currentTime) {
+        System.out.println(this.onTimes.size() + " is the size of the onTimes list");
+        for (int i = 0; i < this.onTimes.size(); i++) {
+            String[] timeSplit = this.onTimes.get(i+1).split(":");
+            ZonedDateTime onCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(timeSplit[0]) , Integer.parseInt(timeSplit[1]) ));
+            if (currentTime.isAfter(onCompareTime)) {
+                String[] offTimeSplit = this.offTimes.get(i+1).split(":");
+                ZonedDateTime offCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(offTimeSplit[0]) , Integer.parseInt(offTimeSplit[1]) ));
+
+                if (offCompareTime.isBefore(onCompareTime)) {
+                    offCompareTime = offCompareTime.plusDays(1);
+                }
+
+                if (currentTime.isBefore(offCompareTime)) {
+                    executeState(true);
+                    this.nextTriggerTime = offCompareTime;
+                    System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
+                    return;
+                } else {
+                    continue;
+                    // maybe add logic here to check for end of list and cache the next on time (for next day)
+                }
+
+            } else {
+                executeState(false);
+                this.nextTriggerTime = onCompareTime;
+                System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
+            }
+        }
+    }
+
     // Write the relay pin execution function here (non-toggle)
     // This will be executed from the setState() function and should be private
     private void setGpioState(boolean newState) {
@@ -210,31 +256,20 @@ public class Relay {
         }
     }
 
-    private void setScheduleLogic(ZonedDateTime currentTime) {
-        System.out.println(this.onTimes.size() + " is the size of the onTimes list");
-        for (int i = 0; i < this.onTimes.size(); i++) {
-            String[] timeSplit = this.onTimes.get(i+1).split(":");
-            ZonedDateTime onCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(timeSplit[0]) , Integer.parseInt(timeSplit[1]) ));
-            if (currentTime.isAfter(onCompareTime)) {
-                String[] offTimeSplit = this.offTimes.get(i+1).split(":");
-                ZonedDateTime offCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(offTimeSplit[0]) , Integer.parseInt(offTimeSplit[1]) ));
+    // This function should encapsulate the sunrise/sunset logic
+    // It should have a cached LocalDate.now() variable (maybe on the relay object?)
+    // timezone and lat/lng should be a system property
+    // Could it return a String in the same format as the schedule logic is expecting?
+    private String getSunTimes() {
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("k:m:s");
+        System.out.println("LocalDate object of now" + LocalDate.now(ZoneId.of("America/Los_Angeles")));
+        SunTimes times = SunTimes.compute()
+                    .on(LocalDate.now(ZoneId.of("America/Los_Angeles")))
+                    .timezone("America/Los_Angeles")
+                    .at(48.014999, -122.064011)
+                    .execute();
+        String result = (times.getRise().format(format) + "/" + times.getSet().format(format));
 
-                if (currentTime.isBefore(offCompareTime)) {
-                    executeState(true);
-                    this.nextTriggerTime = offCompareTime;
-                    System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
-                    return;
-                } else {
-                    continue;
-                }
-
-            } else {
-                executeState(false);
-                this.nextTriggerTime = onCompareTime;
-                System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
-            }
-        }
-
-
+        return result;
     }
 }
