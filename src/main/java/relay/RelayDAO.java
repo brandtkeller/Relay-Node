@@ -33,9 +33,9 @@ public class RelayDAO {
             for (int i = 0; i < names.length; i++) {
                 
                 // This can probaly be changed to a single constructor
-                if (types[i].equals("timer")) {
+                if (types[i].contains("timer")) {
                     System.out.println(names[i] + " is a timer relay");
-                    relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i], types[i], readScheduleFromFile(names[i])));
+                    relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i], types[i], readScheduleFromFile(names[i], types[i])));
                 } else {
                     System.out.println(names[i] + " is NOT a timer relay");
                     relayInstances.put(i + 1, new Relay(i + 1, names[i], relayPins[i], types[i]));
@@ -92,9 +92,8 @@ public class RelayDAO {
 
         // If the existing relay is a timer relay then check for schedule changes
         if ( exRelay.getType().equals("timer")) {
-            System.out.println("This is a timer during the modify request");
             String reqSchedule = reqRelay.getSchedule();
-            if ( reqSchedule!= null  && !reqSchedule.equals(exRelay.getSchedule()) ) {
+            if ( reqSchedule!= null  && !reqSchedule.equals(exRelay.getSchedule()) && !exRelay.getType().equals("suntimer") ) {
                 System.out.println("We need to update the schedule of this timer");
                 // Modify the objects saved in memory
                 exRelay.setSchedule(reqSchedule);
@@ -120,21 +119,26 @@ public class RelayDAO {
         }
     }
 
-    private static String readScheduleFromFile(String name) {
-        try {
-            // Read schedule from a file here, if not present then set a default
-            // https://www.w3schools.com/java/java_files_read.asp
-            File myObj = new File(name + ".txt");
-            Scanner myReader = new Scanner(myObj);
-            String schedule = myReader.nextLine();
-            System.out.println(schedule);
-            myReader.close();
-            return schedule;
-        } catch (FileNotFoundException e) {
-            System.out.println("An error occurred while opening the " + name + ".txt file.");
-            System.out.println("Assigning a generic schedule");
-            return "06:00:00/08:00:00,11:00:00/14:00:00";
+    private static String readScheduleFromFile(String name, String type) {
+        if (type.equals("timer")) {
+            try {
+                // Read schedule from a file here, if not present then set a default
+                // https://www.w3schools.com/java/java_files_read.asp
+                File myObj = new File(name + ".txt");
+                Scanner myReader = new Scanner(myObj);
+                String schedule = myReader.nextLine();
+                System.out.println(schedule);
+                myReader.close();
+                return schedule;
+            } catch (FileNotFoundException e) {
+                System.out.println("An error occurred while opening the " + name + ".txt file.");
+                System.out.println("Assigning a generic schedule");
+                return "06:00:00/08:00:00,11:00:00/14:00:00";
+            }
+        } else {
+            return "";
         }
+        
     }
 
     private static void writeScheduleToFile(String name, String schedule) {

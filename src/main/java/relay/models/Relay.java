@@ -5,10 +5,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Hashtable;
-import java.util.TimeZone;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -43,7 +40,7 @@ public class Relay {
         this.onTimes = new Hashtable<Integer, String>();
         this.offTimes = new Hashtable<Integer, String>();
         this.nextTriggerTime = null;
-        this.today = LocalDate.now();
+        this.today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
 
     }
 
@@ -54,7 +51,7 @@ public class Relay {
         this.state = false;
         this.type = "static";
         this.schedule = null;
-        this.today = LocalDate.now();
+        this.today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
         }
@@ -68,7 +65,7 @@ public class Relay {
         this.state = false;
         this.type = type;
         this.schedule = null;
-        this.today = LocalDate.now();
+        this.today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
         }
@@ -83,12 +80,17 @@ public class Relay {
         this.type = type;
 
         // Initialize private variables for on-times and off-times
-        this.today = LocalDate.now();
+        this.today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
         this.onTimes = new Hashtable<Integer, String>();
         this.offTimes = new Hashtable<Integer, String>();
         this.nextTriggerTime = null;
 
-        setSchedule(schedule);
+        if (this.type.equals("suntimer")) {
+            setSchedule(getSunTimes());
+        } else {
+            setSchedule(schedule);
+        }
+        
         
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             this.rpiPin = RaspiPin.getPinByName("GPIO " + pin);
@@ -172,15 +174,23 @@ public class Relay {
 
         this.onTimes = newOnTimes;
         this.offTimes = newOffTimes;
-
-        getSunTimes();
     }
 
     public void checkSchedule() {
-        if (this.type.equals("timer")) {
+        if (this.type.contains("timer")) {
             ZoneId currentZone = ZoneId.of("America/Los_Angeles");
             ZonedDateTime currentTime = ZonedDateTime.now(currentZone);
             System.out.println(currentTime + " = current time");
+
+            // Check for date change (and get new sunrise/sunset times)
+            if (this.type.equals("suntimer")) {
+                LocalDate now = LocalDate.now(ZoneId.of("America/Los_Angeles"));
+                if (now.isAfter(this.today)) {
+                    this.today = now;
+                    setSchedule(getSunTimes());
+                    this.nextTriggerTime = null; // Re-calc the trigger time via logic below
+                }
+            }
 
             // If we don't have a cached trigger time, we need to iterate through the on/off lists
             // We expect the times to be in sequential order (What if we wanted to run something over-night?)
@@ -203,7 +213,6 @@ public class Relay {
 
     // We need to identify when a on/off time is after midnight in order to add a day to the zonedatetime object
     private void setScheduleLogic(ZonedDateTime currentTime) {
-        System.out.println(this.onTimes.size() + " is the size of the onTimes list");
         for (int i = 0; i < this.onTimes.size(); i++) {
             String[] timeSplit = this.onTimes.get(i+1).split(":");
             ZonedDateTime onCompareTime = currentTime.with(LocalTime.of ( Integer.parseInt(timeSplit[0]) , Integer.parseInt(timeSplit[1]) ));
@@ -221,20 +230,22 @@ public class Relay {
                     System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
                     return;
                 } else {
+                    if ( i == this.onTimes.size()) {
+                        timeSplit = this.onTimes.get(1).split(":");
+                        this.nextTriggerTime = currentTime.with(LocalTime.of ( Integer.parseInt(timeSplit[0]) , Integer.parseInt(timeSplit[1]) )).plusDays(1);
+                    }
                     continue;
-                    // maybe add logic here to check for end of list and cache the next on time (for next day)
                 }
 
             } else {
                 executeState(false);
                 this.nextTriggerTime = onCompareTime;
                 System.out.println("Setting nextTriggerTime for " + this.nextTriggerTime);
+                return;
             }
         }
     }
 
-    // Write the relay pin execution function here (non-toggle)
-    // This will be executed from the setState() function and should be private
     private void setGpioState(boolean newState) {
         if (!Boolean.parseBoolean(System.getProperty("testing"))) {
             GpioUtil.enableNonPrivilegedAccess();
@@ -256,19 +267,15 @@ public class Relay {
         }
     }
 
-    // This function should encapsulate the sunrise/sunset logic
-    // It should have a cached LocalDate.now() variable (maybe on the relay object?)
-    // timezone and lat/lng should be a system property
-    // Could it return a String in the same format as the schedule logic is expecting?
     private String getSunTimes() {
         DateTimeFormatter format = DateTimeFormatter.ofPattern("k:m:s");
-        System.out.println("LocalDate object of now" + LocalDate.now(ZoneId.of("America/Los_Angeles")));
         SunTimes times = SunTimes.compute()
                     .on(LocalDate.now(ZoneId.of("America/Los_Angeles")))
                     .timezone("America/Los_Angeles")
                     .at(48.014999, -122.064011)
                     .execute();
-        String result = (times.getRise().format(format) + "/" + times.getSet().format(format));
+        // Sunset is the relay ON-time so it precedes the sunrise time
+        String result = (times.getSet().format(format) + "/" + times.getRise().format(format));
 
         return result;
     }
