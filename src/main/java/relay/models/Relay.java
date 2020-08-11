@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
+import java.util.concurrent.TimeUnit;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -139,6 +140,18 @@ public class Relay {
         if (!java.util.Objects.equals(this.state, newState)) {
             this.state = newState;
             setGpioState(newState);
+
+            // Cleanup toggle state (1 sec delay)
+            if (this.type.contains("toggle")) {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                }
+                catch (InterruptedException e) {
+                    System.out.println(e);
+                }
+                this.state = false;
+                setGpioState(false);
+            }
         } else {
             System.out.println("Attempted to change state to it's already existing state. IE " + this.state + " == " + newState);
         }
@@ -275,7 +288,7 @@ public class Relay {
                     .at(48.014999, -122.064011)
                     .execute();
         // Sunset is the relay ON-time so it precedes the sunrise time
-        String result = (times.getSet().format(format) + "/" + times.getRise().format(format));
+        String result = (times.getSet().minusMinutes(30).format(format) + "/" + times.getRise().format(format));
 
         return result;
     }

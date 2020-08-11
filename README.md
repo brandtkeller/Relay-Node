@@ -3,13 +3,12 @@
 Node with API exposed for controlling relays.
 
 ## TODO
-* Add toggle relay functionality
-    * Toggle-on time
 * Create sensor <-> relay relationship
     * Many to Many
     * Relationships property?
 * Add initial logic for door sensors
 * Expose a /health GET option for healthchecks with logical checks
+* Update readme with type definitions
 
 ## Timer Functionality (To Add)
 How do we utilize the base relay node to handle a schedule
